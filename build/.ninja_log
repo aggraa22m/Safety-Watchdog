@@ -1,0 +1,10 @@
+# ninja log v6
+26	261	7924354569566973	CMakeFiles/watchdog.dir/src/watchdog_logic.cpp.obj	140bb43b8e885fa
+38	274	7924354569697014	CMakeFiles/test_logic.dir/src/watchdog_logic.cpp.obj	6d20c4c7858d828d
+32	392	7924354569627225	CMakeFiles/test_logic.dir/tests/watchdog_logic_test.cpp.obj	781d6d48ca122779
+392	565	7924354573240549	test_logic.exe	ba2bef523959ad65
+18	1732	7924354569496631	CMakeFiles/watchdog.dir/src/estop.cpp.obj	9915c123037b74cf
+8	3408	7924354569399094	CMakeFiles/watchdog.dir/src/control.cpp.obj	33bc8c50659fc0b2
+13	3417	7924354569449087	CMakeFiles/watchdog.dir/src/watchdog.cpp.obj	dd84036aeca4e3d0
+2	3462	7924354569339888	CMakeFiles/watchdog.dir/src/main.cpp.obj	83110bc0c7e52e7d
+3465	3652	7924354603967334	watchdog.exe	4df554208e72ff4d
