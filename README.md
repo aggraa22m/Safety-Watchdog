@@ -278,7 +278,8 @@ Run individually:
 ./test_logic
 ```
 
-**Expected output:** No output indicates all assertions passed successfully.
+## check detailed output: OUTPUT.md
+
 
 ---
 
