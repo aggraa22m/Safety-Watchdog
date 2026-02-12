@@ -7,79 +7,14 @@ A real-time watchdog system written in C++20 that detects control software failu
 
 ---
 
-## Step 1: Initial Build Attempt (Failed)
+## Step 1: Successful Build
 
-**Commands Run:**
+### Terminal Snip
 
-```bash
-$ make -j$(nproc)
-Command 'nproc' not found, did you mean:
-  command 'nproc' from deb coreutils (9.4-3ubuntu6.1)
-make: *** No targets specified and no makefile found. Stop.
-
-$ ./watchdog
-bash: ./watchdog: No such file or directory
-
-$ ./watchdog.exe
-bash: ./watchdog.exe: Permission denied
 ```
-
-**What Happened:**
-
-- `make` failed because CMake had not been run yet. Without running `cmake ..` first, there is no Makefile generated for `make` to use.
-- `./watchdog` failed because nothing was compiled yet, so no executable existed.
-- `./watchdog.exe` got "Permission denied" because `.exe` files are Windows executables and cannot run natively on Linux. On Linux, executables have no file extension.
-
-**Root Cause:** CMake was not executed before attempting to build.
-
----
-
-## Step 2: CMake Configuration Attempt (Failed)
-
-**Command Run:**
-
-```bash
-$ cmake ..
-CMake Error: The current CMakeCache.txt directory /home/molboy/Safety-Watchdog/build/CMakeCache.txt
-is different than the directory c:/Users/Ashish Reena/OneDrive/Desktop/Personal projects/Emergency_Stop/build
-where CMakeCache.txt was created.
-
-CMake Error: The source "/home/molboy/Safety-Watchdog/CMakeLists.txt" does not match the source
-"C:/Users/Ashish Reena/OneDrive/Desktop/Personal projects/Emergency_Stop/CMakeLists.txt"
-used to generate cache.
-```
-
-**What Happened:**
-
-- The `build/` directory contained a stale `CMakeCache.txt` from a previous CMake run on **Windows**.
-- CMake detected a path mismatch between the Windows source path (`C:/Users/Ashish Reena/...`) and the current Linux path (`/home/molboy/Safety-Watchdog/`).
-- CMake refuses to proceed when the cached source directory doesn't match the current one.
-
-**Fix Applied:**
-
-```bash
-$ rm -rf build
-$ mkdir build
-$ cd build
-$ cmake ..
-```
-
-Clearing the build directory and re-running CMake resolved the issue.
-
----
-
-## Step 3: Successful Build
-
-**Commands Run:**
-
-```bash
-$ cmake ..
-$ make
-```
-
-**Output:**
-
-```text
+molboy@molboy-VirtualBox:~/Safety-Watchdog/build$ ls
+CMakeCache.txt  CMakeFiles  cmake_install.cmake  CTestTestfile.cmake  Makefile
+molboy@molboy-VirtualBox:~/Safety-Watchdog/build$ make
 [  8%] Building CXX object CMakeFiles/watchdog.dir/src/main.cpp.o
 [ 16%] Building CXX object CMakeFiles/watchdog.dir/src/control.cpp.o
 [ 25%] Building CXX object CMakeFiles/watchdog.dir/src/watchdog.cpp.o
@@ -97,54 +32,25 @@ $ make
 [100%] Built target test_fault_injection
 ```
 
-**What Happened:**
+### What Happened
 
-- CMake successfully generated a Makefile from `CMakeLists.txt`.
-- `make` compiled all source files and linked three executables:
-  1. **watchdog** (50%) - Main watchdog program (5 source files)
-  2. **test_logic** (75%) - Unit test executable (2 source files)
-  3. **test_fault_injection** (100%) - Fault injection test executable (2 source files)
-- All 9 compilation units built without errors or warnings.
-- Total: 3 executables produced successfully.
-
----
-
-## Step 4: Running Unit Tests
-
-**Command Run:**
-
-```bash
-$ ./test_logic
-```
-
-**Output:**
-
-```text
-(no output)
-```
-
-**What Happened:**
-
-- The unit test executable ran all 3 assertions in `watchdog_logic_test.cpp`:
-  - `is_heartbeat_expired(last, last + 400ms, 500ms)` = false (within timeout)
-  - `is_heartbeat_expired(last, last + 500ms, 500ms)` = false (exactly at boundary)
-  - `is_heartbeat_expired(last, last + 501ms, 500ms)` = true (just over timeout)
-- **No output means all assertions passed.** The test uses `assert()` which only produces output on failure (by aborting the program).
-- **Result: PASS**
+- After cleaning the build directory and running `cmake ..`, a proper `Makefile` was generated (visible in the `ls` output).
+- `make` compiled all source files and linked **three executables**:
+  1. **watchdog** (0-50%) - Main watchdog program (5 source files: main.cpp, control.cpp, watchdog.cpp, estop.cpp, watchdog_logic.cpp)
+  2. **test_logic** (50-75%) - Unit test executable (2 source files: watchdog_logic_test.cpp, watchdog_logic.cpp)
+  3. **test_fault_injection** (75-100%) - Fault injection test executable (2 source files: fault_injection_test.cpp, watchdog_logic.cpp)
+- All 9 compilation units built **without errors or warnings**.
+- Total: **3 executables** produced successfully.
 
 ---
 
-## Step 5: Running Fault Injection Tests
+## Step 2: Running Unit Tests and Fault Injection Tests
 
-**Command Run:**
+### Terminal Snip
 
-```bash
-$ ./test_fault_injection
 ```
-
-**Output:**
-
-```text
+molboy@molboy-VirtualBox:~/Safety-Watchdog/build$ ./test_logic
+molboy@molboy-VirtualBox:~/Safety-Watchdog/build$ ./test_fault_injection
 Running fault injection tests...
 
 [PASS] test_heartbeat_loss
@@ -156,9 +62,21 @@ Running fault injection tests...
 [PASS] test_boundary_conditions
 
 ✓ All safety fault injection tests passed.
+molboy@molboy-VirtualBox:~/Safety-Watchdog/build$
 ```
 
-**What Happened:**
+### What Happened
+
+**Unit Tests (`./test_logic`):**
+
+- The executable ran all 3 assertions in `watchdog_logic_test.cpp`:
+  - `is_heartbeat_expired(last, last + 400ms, 500ms)` = false (within timeout)
+  - `is_heartbeat_expired(last, last + 500ms, 500ms)` = false (exactly at boundary)
+  - `is_heartbeat_expired(last, last + 501ms, 500ms)` = true (just over timeout)
+- **No output means all assertions passed.** The test uses `assert()` which only produces output on failure (by aborting the program).
+- **Result: PASS (3/3)**
+
+**Fault Injection Tests (`./test_fault_injection`):**
 
 Each test validates a different failure scenario:
 
@@ -173,13 +91,13 @@ Each test validates a different failure scenario:
 | test_boundary_conditions | Exact timeout threshold | 500ms vs 500ms+1ns | Boundary precise |
 
 - All 7 tests passed, confirming the watchdog logic correctly detects every failure scenario.
-- **Result: 7/7 PASS**
+- **Result: PASS (7/7)**
 
 ---
 
-## Step 6: Running Watchdog with Fault Injection Enabled
+## Step 3: Running Watchdog with Fault Injection Enabled (simulate_hang = true)
 
-**Configuration Change:**
+### Configuration Change
 
 In `src/main.cpp`, line 21 was changed:
 
@@ -191,35 +109,70 @@ bool simulate_hang = false;
 bool simulate_hang = true;
 ```
 
-**Command Run:**
+### Terminal Snip
 
-```bash
-$ make
-$ ./watchdog
 ```
-
-**Output:**
-
-```text
+molboy@molboy-VirtualBox:~/Safety-Watchdog/build$ make
+[  8%] Building CXX object CMakeFiles/watchdog.dir/src/main.cpp.o
+[ 16%] Linking CXX executable watchdog
+[ 50%] Built target watchdog
+[ 75%] Built target test_logic
+[100%] Built target test_fault_injection
+molboy@molboy-VirtualBox:~/Safety-Watchdog/build$ ./watchdog
 [E-STOP] Heartbeat timeout > 500ms
 Aborted (core dumped)
 ```
 
-**What Happened:**
+### What Happened
 
-1. The program started and spawned two threads:
+1. `make` detected that only `main.cpp` changed, so it **recompiled only that file** (incremental build) and re-linked the watchdog executable. The test executables were unchanged.
+
+2. The program started and spawned two threads:
    - **Control Thread**: With `simulate_hang = true`, this thread entered an infinite busy loop (`while(true) {}`) without ever updating the heartbeat timestamp.
    - **Watchdog Thread**: Continuously checked the heartbeat timestamp every 10ms.
 
-2. After ~500ms, the watchdog thread detected that the heartbeat had not been updated within the 500ms timeout.
+3. After ~500ms, the watchdog thread detected that the heartbeat had not been updated within the 500ms timeout.
 
-3. The watchdog called `emergency_stop("Heartbeat timeout > 500ms")` which:
+4. The watchdog called `emergency_stop("Heartbeat timeout > 500ms")` which:
    - Printed `[E-STOP] Heartbeat timeout > 500ms` to stderr
    - Called `std::abort()` to immediately terminate the process
 
-4. The OS reported `Aborted (core dumped)` indicating the process was killed by SIGABRT.
+5. The OS reported `Aborted (core dumped)` indicating the process was killed by SIGABRT signal.
 
 **This is the correct and desired behavior.** In a real safety-critical system (robot, UAV, autonomous vehicle), this would trigger a hardware E-Stop to bring the system to a safe state.
+
+---
+
+## Step 4: Final Verification (All Tests After E-Stop Demo)
+
+### Terminal Snip
+
+```
+molboy@molboy-VirtualBox:~/Safety-Watchdog/build$ ./watchdog
+[E-STOP] Heartbeat timeout > 500ms
+Aborted (core dumped)
+molboy@molboy-VirtualBox:~/Safety-Watchdog/build$ ./test_logic
+molboy@molboy-VirtualBox:~/Safety-Watchdog/build$ ./test_fault_injection
+Running fault injection tests...
+
+[PASS] test_heartbeat_loss
+[PASS] test_control_thread_hang
+[PASS] test_scheduler_delay
+[PASS] test_watchdog_starvation
+[PASS] test_flaky_heartbeat
+[PASS] test_no_recovery_after_estop
+[PASS] test_boundary_conditions
+
+✓ All safety fault injection tests passed.
+molboy@molboy-VirtualBox:~/Safety-Watchdog/build$
+```
+
+### What Happened
+
+- **watchdog**: E-Stop triggered correctly (simulate_hang = true), process aborted as expected.
+- **test_logic**: All 3 unit test assertions passed silently.
+- **test_fault_injection**: All 7 fault injection scenarios passed.
+- This confirms the entire system is functioning correctly after the E-Stop demonstration.
 
 ---
 
@@ -238,9 +191,12 @@ Aborted (core dumped)
 ## System Information
 
 - **OS:** Linux Mint (VirtualBox VM)
+- **Host:** molboy-VirtualBox
+- **User:** molboy
 - **Compiler:** GCC with C++20 support
 - **Build System:** CMake 3.14+
 - **Threading:** POSIX threads (pthread)
+- **Project Path:** ~/Safety-Watchdog/
 
 ---
 
@@ -251,3 +207,4 @@ Aborted (core dumped)
 3. **No false positives:** Normal heartbeat operation (100ms interval) does not trigger E-Stop.
 4. **Non-recoverable:** Once triggered, the E-Stop cannot be cleared in software.
 5. **Lock-free design:** All thread communication uses `std::atomic` with proper memory ordering.
+6. **Incremental builds work:** CMake only recompiles changed files, saving build time.
