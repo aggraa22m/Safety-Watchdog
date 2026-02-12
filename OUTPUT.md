@@ -11,26 +11,8 @@ A real-time watchdog system written in C++20 that detects control software failu
 
 ### Terminal Snip
 
-```
-molboy@molboy-VirtualBox:~/Safety-Watchdog/build$ ls
-CMakeCache.txt  CMakeFiles  cmake_install.cmake  CTestTestfile.cmake  Makefile
-molboy@molboy-VirtualBox:~/Safety-Watchdog/build$ make
-[  8%] Building CXX object CMakeFiles/watchdog.dir/src/main.cpp.o
-[ 16%] Building CXX object CMakeFiles/watchdog.dir/src/control.cpp.o
-[ 25%] Building CXX object CMakeFiles/watchdog.dir/src/watchdog.cpp.o
-[ 33%] Building CXX object CMakeFiles/watchdog.dir/src/estop.cpp.o
-[ 41%] Building CXX object CMakeFiles/watchdog.dir/src/watchdog_logic.cpp.o
-[ 50%] Linking CXX executable watchdog
-[ 50%] Built target watchdog
-[ 58%] Building CXX object CMakeFiles/test_logic.dir/tests/watchdog_logic_test.cpp.o
-[ 66%] Building CXX object CMakeFiles/test_logic.dir/src/watchdog_logic.cpp.o
-[ 75%] Linking CXX executable test_logic
-[ 75%] Built target test_logic
-[ 83%] Building CXX object CMakeFiles/test_fault_injection.dir/tests/fault_injection_test.cpp.o
-[ 91%] Building CXX object CMakeFiles/test_fault_injection.dir/src/watchdog_logic.cpp.o
-[100%] Linking CXX executable test_fault_injection
-[100%] Built target test_fault_injection
-```
+<img width="1128" height="514" alt="Screenshot 2026-02-11 204013" src="https://github.com/user-attachments/assets/86444a88-f62c-40ee-baf5-ae41186a2d11" />
+
 
 ### What Happened
 
@@ -48,22 +30,8 @@ molboy@molboy-VirtualBox:~/Safety-Watchdog/build$ make
 
 ### Terminal Snip
 
-```
-molboy@molboy-VirtualBox:~/Safety-Watchdog/build$ ./test_logic
-molboy@molboy-VirtualBox:~/Safety-Watchdog/build$ ./test_fault_injection
-Running fault injection tests...
+<img width="880" height="331" alt="Screenshot 2026-02-11 204153" src="https://github.com/user-attachments/assets/245ad6b8-e6cc-4b85-857c-ecd49d29fcef" />
 
-[PASS] test_heartbeat_loss
-[PASS] test_control_thread_hang
-[PASS] test_scheduler_delay
-[PASS] test_watchdog_starvation
-[PASS] test_flaky_heartbeat
-[PASS] test_no_recovery_after_estop
-[PASS] test_boundary_conditions
-
-✓ All safety fault injection tests passed.
-molboy@molboy-VirtualBox:~/Safety-Watchdog/build$
-```
 
 ### What Happened
 
@@ -111,17 +79,8 @@ bool simulate_hang = true;
 
 ### Terminal Snip
 
-```
-molboy@molboy-VirtualBox:~/Safety-Watchdog/build$ make
-[  8%] Building CXX object CMakeFiles/watchdog.dir/src/main.cpp.o
-[ 16%] Linking CXX executable watchdog
-[ 50%] Built target watchdog
-[ 75%] Built target test_logic
-[100%] Built target test_fault_injection
-molboy@molboy-VirtualBox:~/Safety-Watchdog/build$ ./watchdog
-[E-STOP] Heartbeat timeout > 500ms
-Aborted (core dumped)
-```
+<img width="788" height="237" alt="Screenshot 2026-02-11 204339" src="https://github.com/user-attachments/assets/6b3d798a-9f27-44d4-be81-be72b08703d4" />
+`
 
 ### What Happened
 
@@ -147,25 +106,8 @@ Aborted (core dumped)
 
 ### Terminal Snip
 
-```
-molboy@molboy-VirtualBox:~/Safety-Watchdog/build$ ./watchdog
-[E-STOP] Heartbeat timeout > 500ms
-Aborted (core dumped)
-molboy@molboy-VirtualBox:~/Safety-Watchdog/build$ ./test_logic
-molboy@molboy-VirtualBox:~/Safety-Watchdog/build$ ./test_fault_injection
-Running fault injection tests...
+<img width="900" height="399" alt="Screenshot 2026-02-11 204439" src="https://github.com/user-attachments/assets/6ff7e5d5-605d-484f-8603-e9e98b263df2" />
 
-[PASS] test_heartbeat_loss
-[PASS] test_control_thread_hang
-[PASS] test_scheduler_delay
-[PASS] test_watchdog_starvation
-[PASS] test_flaky_heartbeat
-[PASS] test_no_recovery_after_estop
-[PASS] test_boundary_conditions
-
-✓ All safety fault injection tests passed.
-molboy@molboy-VirtualBox:~/Safety-Watchdog/build$
-```
 
 ### What Happened
 
